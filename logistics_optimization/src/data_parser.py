@@ -1,4 +1,24 @@
+import json
+
 import numpy as np
+
+
+def haversine_distance(coord1, coord2):
+    """
+    Вычисляет расстояние в километрах между двумя точками на Земле.
+    Координаты передаются в формате (широта, долгота).
+    """
+    R = 6371.0  # Радиус Земли в км
+    lat1, lon1 = np.radians(coord1)
+    lat2, lon2 = np.radians(coord2)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+
+    return R * c
 
 
 def build_transportation_matrices(supply, demand, cost_matrix):
@@ -33,7 +53,4 @@ def build_transportation_matrices(supply, demand, cost_matrix):
     A = np.array(A)
     b = np.array(b)
 
-    A = A[:-1]
-    b = b[:-1]
-
-    return c, A, b
+    return c, A[:-1], b[:-1]
