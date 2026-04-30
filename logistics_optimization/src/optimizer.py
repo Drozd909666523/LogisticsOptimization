@@ -20,19 +20,14 @@ def interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
     for k in range(max_iter):
         r = b - A @ x
 
-        D = np.diag(x**2)
+        D = np.diag(np.clip(x ** 2, 1e-12, None))
 
         LHS = A @ D @ A.T
         RHS = r + A @ D @ c
 
-        try:
-            u = np.linalg.solve(LHS, RHS)
-        except np.linalg.LinAlgError:
-            print(f"Матрица стала сингулярной на итерации {k}")
-            break
+        u = np.linalg.solve(LHS, RHS)
 
         g = c - A.T @ u
-
         s = -D @ g
 
         negative_s = s < 0
