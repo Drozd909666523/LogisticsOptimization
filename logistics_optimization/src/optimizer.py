@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def custom_interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
+def interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
     """
     Реализация прямого метода внутренней точки (алгоритм Дикина).
     Решает задачу: min c^T x, при A_eq x = b_eq, x >= 0.
