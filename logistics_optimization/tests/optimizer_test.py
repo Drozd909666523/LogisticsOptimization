@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
 from scipy.optimize import linprog
+
 from logistics_optimization.src.optimizer import interior_point
 
 
@@ -18,28 +20,34 @@ class TestInteriorPointOptimizer(unittest.TestCase):
         c = [-3, -5, 0, 0, 0]
 
         # Матрица ограничений A_eq
-        A_eq = [
-            [1, 0, 1, 0, 0],
-            [0, 2, 0, 1, 0],
-            [3, 2, 0, 0, 1]
-        ]
+        A_eq = [[1, 0, 1, 0, 0], [0, 2, 0, 1, 0], [3, 2, 0, 0, 1]]
 
         # Вектор правых частей b_eq
         b_eq = [4, 12, 18]
 
-        expected_result = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=(0, None), method='highs')
+        expected_result = linprog(
+            c, A_eq=A_eq, b_eq=b_eq, bounds=(0, None), method="highs"
+        )
 
         result = interior_point(c, A_eq, b_eq)
 
         self.assertTrue(expected_result.success, "Scipy не смог решить задачу")
         self.assertTrue(result["success"], "Тестируемый метод не смог решить задачу")
 
-        self.assertAlmostEqual(expected_result.fun, result["fun"], places=4,
-                               msg="Значения целевой функции не совпадают")
+        self.assertAlmostEqual(
+            expected_result.fun,
+            result["fun"],
+            places=4,
+            msg="Значения целевой функции не совпадают",
+        )
 
-        np.testing.assert_allclose(expected_result.x, result["x"], atol=1e-4,
-                                   err_msg="Векторы решений не совпадают")
+        np.testing.assert_allclose(
+            expected_result.x,
+            result["x"],
+            atol=1e-4,
+            err_msg="Векторы решений не совпадают",
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
