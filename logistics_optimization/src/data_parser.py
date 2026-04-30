@@ -21,6 +21,18 @@ def haversine_distance(coord1, coord2):
     return R * c
 
 
+def load_shops_from_overpass(filepath):
+    """Читает JSON от Overpass и возвращает список координат (lat, lon)."""
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    shops = []
+    for element in data.get("elements", []):
+        if element["type"] == "node":
+            shops.append((element["lat"], element["lon"]))
+    return shops
+
+
 def build_transportation_matrices(supply, demand, cost_matrix):
     """
     Создает матрицы A, b и вектор c для транспортной задачи.
