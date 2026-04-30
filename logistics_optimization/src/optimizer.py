@@ -20,9 +20,6 @@ def interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
     for k in range(max_iter):
         r = b - A @ x
 
-        if np.linalg.norm(r) < tol and k > 0:
-            break
-
         D = np.diag(x**2)
 
         LHS = A @ D @ A.T
