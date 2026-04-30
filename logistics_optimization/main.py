@@ -6,6 +6,7 @@ from src.data_parser import (
     load_shops_from_overpass,
 )
 from src.optimizer import interior_point
+from src.visualization import draw_logistics_map
 
 
 def main():
@@ -47,13 +48,8 @@ def main():
         print(
             f"Успех! Минимальные затраты на логистику (тонно-километры): {result['fun']:.2f}"
         )
-
         optimal_routes = result["x"].reshape((num_warehouses, num_shops))
-
-        print("\nПлан поставок со склада 'Парнас':")
-        for j in range(num_shops):
-            if optimal_routes[0, j] > 0.5:
-                print(f"  В магазин №{j + 1}: {optimal_routes[0, j]:.1f} паллет")
+        draw_logistics_map(warehouses_coords, shops_coords, optimal_routes)
     else:
         print("Оптимизация не удалась:", result["message"])
 
