@@ -61,9 +61,6 @@ def interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
 
 
 def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
-    """
-    Алгоритм оптимизации в конусе центрального пути
-    """
     c = np.array(c, dtype=float)
     A = np.array(A_eq, dtype=float)
     b = np.array(b_eq, dtype=float)
@@ -71,29 +68,51 @@ def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
 
     m, n = A.shape
     mu = mu0
+    gamma = 0.95
 
     rho_n = 0.5 * (np.sqrt(n) - 1) / (n - 0.5)
 
     for k in range(max_iter):
+        r = b - A @ x
         D = np.diag(np.clip(x ** 2, 1e-12, None))
-
         LHS = A @ D @ A.T
 
-        RHS_0 = A @ D @ c
-        RHS_mu = (A @ D @ c) - (mu * b)
+        if np.linalg.norm(r) > tol:
+            RHS = r + A @ D @ c
+            try:
+                u = np.linalg.solve(LHS, RHS)
+            except np.linalg.LinAlgError:
+                u = np.linalg.lstsq(LHS, RHS, rcond=None)[0]
 
-        theta_0 = np.linalg.solve(LHS, RHS_0)
-        theta_mu = np.linalg.solve(LHS, RHS_mu)
+            g = c - A.T @ u
+            s = -D @ g
+            mu_new = mu
 
-        mu_new = (1 - rho_n) * mu
+        else:
+            r = np.zeros_like(r)
+            RHS_0 = A @ D @ c
+            RHS_mu = (A @ D @ c) - (mu * b)
 
-        u_new = theta_0 + (mu_new / mu) * (theta_mu - theta_0)
+            try:
+                theta_0 = np.linalg.solve(LHS, RHS_0)
+                theta_mu = np.linalg.solve(LHS, RHS_mu)
+            except np.linalg.LinAlgError:
+                theta_0 = np.linalg.lstsq(LHS, RHS_0, rcond=None)[0]
+                theta_mu = np.linalg.lstsq(LHS, RHS_mu, rcond=None)[0]
 
-        g_new = c - A.T @ u_new
+            mu_new = (1 - rho_n) * mu
+            u = theta_0 + (mu_new / mu) * (theta_mu - theta_0)
+            g = c - A.T @ u
 
-        s = (1 / mu_new) * x * (mu_new - x * g_new)
+            s = (1 / mu_new) * x * (mu_new - x * g)
 
-        x_new = x + s
+        negative_s = s < 0
+        if np.any(negative_s):
+            step = min(1.0, gamma * np.min(-x[negative_s] / s[negative_s]))
+        else:
+            step = 1.0
+
+        x_new = x + step * s
 
         if np.linalg.norm(x_new - x) < tol:
             x = x_new
