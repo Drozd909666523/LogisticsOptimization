@@ -74,7 +74,7 @@ def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
 
     for k in range(max_iter):
         r = b - A @ x
-        D = np.diag(np.clip(x ** 2, 1e-12, None))
+        D = np.diag(np.clip(x**2, 1e-12, None))
         LHS = A @ D @ A.T
 
         if np.linalg.norm(r) > tol:
@@ -126,5 +126,5 @@ def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
         "fun": c @ x,
         "nit": k,
         "success": k < max_iter - 1,
-        "name": "Central Path"
+        "name": "Central Path",
     }

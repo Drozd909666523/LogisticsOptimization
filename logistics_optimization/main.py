@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.data_parser import (
     build_transportation_matrices,
     haversine_distance,
