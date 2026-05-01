@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from scipy.optimize import linprog
 
-from logistics_optimization.src.optimizer import interior_point
+from logistics_optimization.src.optimizer import central_path, interior_point
 
 
 class TestInteriorPointOptimizer(unittest.TestCase):
@@ -46,6 +46,28 @@ class TestInteriorPointOptimizer(unittest.TestCase):
             result["x"],
             atol=1e-4,
             err_msg="Векторы решений не совпадают",
+        )
+
+    def test_central_path_problem(self):
+        """
+        Тестируем метод центрального пути на той же базовой задаче.
+        """
+        c = [-3, -5, 0, 0, 0]
+
+        A_eq = [[1, 0, 1, 0, 0], [0, 2, 0, 1, 0], [3, 2, 0, 0, 1]]
+        b_eq = [4, 12, 18]
+
+        x0 = np.ones(5)
+
+        res = central_path(c, A_eq, b_eq, x0=x0, mu0=10.0)
+
+        self.assertTrue(res["success"], "Алгоритм центрального пути не сошелся")
+
+        self.assertAlmostEqual(
+            -36.0,
+            res["fun"],
+            places=3,
+            msg=f"Неверный ответ! Ожидалось -36.0, получено {res['fun']}",
         )
 
 
