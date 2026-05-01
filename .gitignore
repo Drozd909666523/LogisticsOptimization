@@ -1,0 +1,13 @@
+.idea/
+
+.venv/
+venv/
+env/
+
+__pycache__/
+*.pyc
+
+*.html
+
+*.json
+!raw_data.json
