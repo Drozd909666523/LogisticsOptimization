@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from scipy.optimize import linprog
 
-from logistics_optimization.src.optimizer import central_path, interior_point
+from logistics_optimization.src.optimizer import central_path, interior_point, dual_interior_point
 
 
 class TestInteriorPointOptimizer(unittest.TestCase):
@@ -69,6 +69,15 @@ class TestInteriorPointOptimizer(unittest.TestCase):
             places=3,
             msg=f"Неверный ответ! Ожидалось -36.0, получено {res['fun']}",
         )
+
+    def test_dual_problem(self):
+        c = [-3, -5, 0, 0, 0]
+        A_eq = [[1, 0, 1, 0, 0], [0, 2, 0, 1, 0], [3, 2, 0, 0, 1]]
+        b_eq = [4, 12, 18]
+
+        res = dual_interior_point(c, A_eq, b_eq)
+        self.assertTrue(res["success"], "Двойственный алгоритм не сошелся")
+        self.assertAlmostEqual(-36.0, res["fun"], places=3)
 
 
 if __name__ == "__main__":
