@@ -58,3 +58,54 @@ def interior_point(c, A_eq, b_eq, x0=None, gamma=0.95, tol=1e-6, max_iter=200):
         if k < max_iter - 1
         else "Maximum iterations reached.",
     }
+
+
+def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
+    """
+    Алгоритм оптимизации в конусе центрального пути
+    """
+    c = np.array(c, dtype=float)
+    A = np.array(A_eq, dtype=float)
+    b = np.array(b_eq, dtype=float)
+    x = np.array(x0, dtype=float)
+
+    m, n = A.shape
+    mu = mu0
+
+    rho_n = 0.5 * (np.sqrt(n) - 1) / (n - 0.5)
+
+    for k in range(max_iter):
+        D = np.diag(np.clip(x ** 2, 1e-12, None))
+
+        LHS = A @ D @ A.T
+
+        RHS_0 = A @ D @ c
+        RHS_mu = (A @ D @ c) - (mu * b)
+
+        theta_0 = np.linalg.solve(LHS, RHS_0)
+        theta_mu = np.linalg.solve(LHS, RHS_mu)
+
+        mu_new = (1 - rho_n) * mu
+
+        u_new = theta_0 + (mu_new / mu) * (theta_mu - theta_0)
+
+        g_new = c - A.T @ u_new
+
+        s = (1 / mu_new) * x * (mu_new - x * g_new)
+
+        x_new = x + s
+
+        if np.linalg.norm(x_new - x) < tol:
+            x = x_new
+            break
+
+        x = x_new
+        mu = mu_new
+
+    return {
+        "x": x,
+        "fun": c @ x,
+        "nit": k,
+        "success": k < max_iter - 1,
+        "name": "Central Path"
+    }
