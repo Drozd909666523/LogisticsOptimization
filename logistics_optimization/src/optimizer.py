@@ -128,3 +128,59 @@ def central_path(c, A_eq, b_eq, x0, mu0=10.0, tol=1e-6, max_iter=200):
         "success": k < max_iter - 1,
         "name": "Central Path",
     }
+
+
+def dual_interior_point(c, A_eq, b_eq, u0=None, gamma=0.95, tol=1e-6, max_iter=2000):
+    """
+    Двойственный алгоритм внутренних точек (Раздел 2 статьи).
+    """
+    c = np.array(c, dtype=float)
+    A = np.array(A_eq, dtype=float)
+    b = np.array(b_eq, dtype=float)
+    m, n = A.shape
+
+    if u0 is None:
+        u = -1000.0 * np.ones(m)
+    else:
+        u = np.array(u0, dtype=float)
+
+    g = c - A.T @ u
+
+    for k in range(max_iter):
+        D = np.diag(np.clip(g**2, 1e-12, None))
+
+        LHS = D + A.T @ A
+        RHS = A.T @ b
+
+        try:
+            x = np.linalg.solve(LHS, RHS)
+        except np.linalg.LinAlgError:
+            x = np.linalg.lstsq(LHS, RHS, rcond=None)[0]
+
+        r = b - A @ x
+        z = -D @ x
+
+        negative_z = z < 0
+        if np.any(negative_z):
+            lambda_tilde = gamma * np.min(-g[negative_z] / z[negative_z])
+        else:
+            lambda_tilde = 1.0
+
+        u_new = u + lambda_tilde * r
+
+        if np.linalg.norm(u_new - u) < tol:
+            u = u_new
+            break
+
+        u = u_new
+
+        g = c - A.T @ u
+
+    return {
+        "x": x,
+        "fun": c @ x,
+        "dual_fun": b @ u,
+        "nit": k,
+        "success": k < max_iter - 1,
+        "name": "Dual Method",
+    }
